@@ -14,6 +14,22 @@ cache:
 
 script: "./gradlew clean build"
 
+before_deploy:
+  - zip -r jione-springboot-webservice *
+  - mkdir -p deploy
+  - mv jione-springboot-webservice.zip deploy/jione-springboot-webservice.zip
+
+deploy: # 외부 서비스와 연동될 행위들을 선언
+  - provider: s3
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_KEY
+    bucket: jione-springboot-webservice-build
+    region: ap-northeast-2
+    skip_cleanup: true
+    acl: private # zip 파일 접근을 private으로
+    local_dir: deploy # before_deploy에서 생성한 디렉토리, 해당 위치의 파일들만 S3로 전송
+    wait-until-deployed: true
+
 # CI 실행 완료 시 메일로 알람
 notifications:
   email:
